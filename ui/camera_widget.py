@@ -9,7 +9,6 @@ class CameraWidget(QLabel):
         self.setFixedSize(400, 300)
 
     def update_frame(self, frame):
-
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         h, w, ch = rgb.shape
@@ -22,4 +21,12 @@ class CameraWidget(QLabel):
             QImage.Format_RGB888
         )
 
-        self.setPixmap(QPixmap.fromImage(qt_img))
+        pixmap = QPixmap.fromImage(qt_img)
+
+        # ✅ SCALE cho vừa khung
+        pixmap = pixmap.scaled(
+            self.width(),
+            self.height()
+        )
+
+        self.setPixmap(pixmap)
