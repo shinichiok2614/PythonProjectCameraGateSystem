@@ -13,7 +13,7 @@ from PySide6.QtCore import Qt
 
 from ai.face_detector import FaceDetector
 from ai.plate_detector import PlateDetector
-
+from ai.ocr_reader import OCRReader
 
 class MainWindow(QMainWindow):
 
@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
 
         self.face_detector = FaceDetector()
         self.plate_detector = PlateDetector()
+        self.ocr_reader = OCRReader()
 
         self.setWindowTitle("Camera System")
         self.setGeometry(100, 100, 900, 700)
@@ -91,6 +92,8 @@ class MainWindow(QMainWindow):
         self.btn_cap1.clicked.connect(self.capture_cam1)
         self.btn_cap2.clicked.connect(self.capture_cam2)
 
+        self.plate_text_label = QLabel("Biển số: ")
+        main_layout.addWidget(self.plate_text_label)
     # =====================
     # CAPTURE FUNCTIONS
     # =====================
@@ -111,11 +114,26 @@ class MainWindow(QMainWindow):
         frame = self.cam2.capture()
 
         if frame is not None:
+
             frame_copy = frame.copy()
 
+            # detect box
             detected = self.plate_detector.draw(frame_copy)
 
             self.show_image(detected, self.result2)
+
+            # crop biển số
+            plate_crop = self.plate_detector.crop_plate(frame)
+
+            if plate_crop is not None:
+
+                # OCR
+                text = self.ocr_reader.read(plate_crop)
+
+                self.plate_text_label.setText(f"Biển số: {text}")
+
+            else:
+                self.plate_text_label.setText("Không thấy biển số")
 
     # =====================
     # SHOW IMAGE

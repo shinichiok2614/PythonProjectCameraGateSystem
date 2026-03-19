@@ -34,3 +34,14 @@ class PlateDetector:
             )
 
         return frame
+
+    def crop_plate(self, frame):
+
+        boxes = self.detect(frame)
+
+        if len(boxes) == 0:
+            return None
+
+        x1, y1, x2, y2 = map(int, boxes[0][:4])
+
+        return frame[y1:y2, x1:x2]
