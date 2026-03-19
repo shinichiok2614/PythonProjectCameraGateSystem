@@ -11,11 +11,17 @@ import cv2
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import Qt
 
+from ai.face_detector import FaceDetector
+from ai.plate_detector import PlateDetector
+
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        self.face_detector = FaceDetector()
+        self.plate_detector = PlateDetector()
 
         self.setWindowTitle("Camera System")
         self.setGeometry(100, 100, 900, 700)
@@ -70,8 +76,8 @@ class MainWindow(QMainWindow):
         # =====================
         # THREAD
         # =====================
-        self.thread1 = CameraThread(0)
-        self.thread2 = CameraThread(1)
+        self.thread1 = CameraThread(1)
+        self.thread2 = CameraThread(0)
 
         self.thread1.frame_signal.connect(self.cam1.update_frame)
         self.thread2.frame_signal.connect(self.cam2.update_frame)
@@ -93,14 +99,23 @@ class MainWindow(QMainWindow):
         frame = self.cam1.capture()
 
         if frame is not None:
-            self.show_image(frame, self.result1)
+            # copy để không làm ảnh gốc
+            frame_copy = frame.copy()
+
+            detected = self.face_detector.draw(frame_copy)
+
+            self.show_image(detected, self.result1)
 
     def capture_cam2(self):
 
         frame = self.cam2.capture()
 
         if frame is not None:
-            self.show_image(frame, self.result2)
+            frame_copy = frame.copy()
+
+            detected = self.plate_detector.draw(frame_copy)
+
+            self.show_image(detected, self.result2)
 
     # =====================
     # SHOW IMAGE
